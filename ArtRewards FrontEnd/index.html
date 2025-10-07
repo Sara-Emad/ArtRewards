@@ -151,6 +151,9 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Select Artworks to Add</h5>
+                    <div class="ms-auto me-2">
+                        <button type="button" id="openArtworkFormBtn" class="btn btn-outline-primary btn-sm">Create Artwork</button>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -168,6 +171,51 @@
                     <button type="button" id="addArtworksBtn" class="btn btn-dark">
                         Add Selected Artworks (<span id="selectedArtworksCount">0</span>)
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================== Create Artwork Form =================== -->
+    <div class="modal fade" id="artworkFormModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Artwork</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="artworkForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="artworkTitleInput" class="form-label">Title *</label>
+                                <input type="text" id="artworkTitleInput" class="form-control">
+                                <div id="artworkTitleError" class="invalid-feedback d-none"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="artistNameInput" class="form-label">Artist Name *</label>
+                                <input type="text" id="artistNameInput" class="form-control">
+                                <div id="artistNameError" class="invalid-feedback d-none"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="artworkImageUpload" class="form-label">Image File</label>
+                                <input type="file" id="artworkImageUpload" class="form-control" accept=".jpeg,.jpg,.png,.webp">
+                                <div class="form-text">PNG, JPG, WEBP (max 5MB). Either file or URL is required.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="artworkImageUrl" class="form-label">Image URL</label>
+                                <input type="url" id="artworkImageUrl" class="form-control" placeholder="https://...">
+                            </div>
+                            <div class="col-12">
+                                <label for="artworkLink" class="form-label">External Link (optional)</label>
+                                <input type="url" id="artworkLink" class="form-control" placeholder="https://...">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="submitArtworkBtn" class="btn btn-primary">Create Artwork</button>
                 </div>
             </div>
         </div>

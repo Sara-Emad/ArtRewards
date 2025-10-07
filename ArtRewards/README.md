@@ -1,61 +1,142 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## ArtRewards – Backend API (Laravel) and Frontend (Vanilla JS)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This repo contains a Laravel API and a simple static frontend for managing artists, artworks, and collections, including image uploads.
 
-## About Laravel
+### Prerequisites
+- PHP 8.2+
+- Composer
+- Node.js 18+ (only for optional static server; the frontend is plain HTML/JS)
+- Git
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Folder layout
+- `ArtRewards/` – Laravel backend (API)
+- `ArtRewards FrontEnd/` – Static frontend (HTML/CSS/JS)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 1) Backend – Laravel API
 
-## Learning Laravel
+### Setup
+From `ArtRewards/`:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+composer install
+cp .env.example .env   # on Windows: copy .env.example .env
+php artisan key:generate
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Database (SQLite is preconfigured):
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+# Ensure the sqlite file exists (the repo already includes one):
+# database/database.sqlite
 
-## Laravel Sponsors
+php artisan migrate --seed
+php artisan storage:link
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Run the API:
 
-### Premium Partners
+```bash
+php artisan serve
+# API base will be http://127.0.0.1:8000/api
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Health check:
+```bash
+curl http://127.0.0.1:8000/api/health
+```
 
-## Contributing
+### Available API endpoints
+- `GET /api/collections?search=&sort=&per_page=` – list with search/sort/pagination
+- `POST /api/collections` – create
+  - FormData: `artist_id` (int), `title` (string), `description` (string), `cover_image` (file)
+  - or JSON: `artist_id`, `title`, `description`, `cover_image_url`
+- `GET /api/collections/{id}` – show (includes `artworks`)
+- `PUT /api/collections/{id}` – update (JSON or FormData with `cover_image`)
+- `DELETE /api/collections/{id}` – delete
+- `POST /api/collections/{id}/artworks` – attach artworks
+  - JSON: `{ "artwork_ids": number[] }`
+- `DELETE /api/collections/{id}/artworks/{artworkId}` – detach artwork
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- `GET /api/artworks?search=&sort=&per_page=` – list artworks
+- `POST /api/artworks` – create artwork
+  - FormData: `title`, `artist_name`, optional `category`, `price_cents`, `image` (file)
+  - or JSON: `title`, `artist_name`, optional `image_url`, `link`, etc.
 
-## Code of Conduct
+Notes
+- Image uploads are stored under `storage/app/public/...` and served via `public/storage` (enabled by `php artisan storage:link`).
+- The API returns absolute `cover_image_url`/`image_url` so the frontend can render images directly.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 2) Frontend – Static site
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+The frontend is a static page that calls the API via `fetch`. You can open it with any static HTTP server.
 
-## License
+### Configure API URL
+In `ArtRewards FrontEnd/index.html`, we set the API base:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```html
+<script>window.API_BASE_URL = 'http://127.0.0.1:8000/api';</script>
+```
+
+### Run the frontend
+Option A: VS Code Live Server (or any dev server that serves the folder).
+
+Option B: Node’s simple static server (from project root):
+
+```bash
+npx serve "ArtRewards FrontEnd" -l 56258
+# Then open http://localhost:56258
+```
+
+### What’s implemented in the frontend
+- Collections grid with search/sort (client-side) and detail view
+- Create/Edit collection with cover image upload (drag-and-drop or click)
+- Delete collection
+- Artwork selection modal (pagination), add artworks to a collection
+- Remove artwork from a collection
+- Renders collection cover and artwork thumbnails; shows artwork title and artist name
+
+---
+
+## 3) How the API was created (high-level steps)
+
+1. Models and Migrations
+   - `Artist`, `Artwork`, `Collection` tables; pivot `collection_artwork`
+   - Relationships set in models (`Collection` has many `artworks` via pivot; belongs to `artist`)
+
+2. Validation Requests
+   - `StoreCollectionRequest`, `UpdateCollectionRequest`, `AddArtworksRequest` encapsulate validation rules
+
+3. Controllers
+   - `CollectionController` with actions: `index`, `store`, `show`, `update`, `destroy`, `addArtworks`, `removeArtwork`
+   - `ArtworkController` with `index`, `store`
+   - Image handling with `$request->file(...)->store('covers','public')` and public URL via `asset('storage/...')`
+
+4. Routes (`routes/api.php`)
+   - REST endpoints for collections and artworks (see list above)
+
+5. Pagination, Search, Sort
+   - `index` actions accept `search`, `sort`, `per_page`; use Eloquent query builders and return Laravel paginator JSON
+
+6. Seeds
+   - Seeders create sample artists, artworks, collections for quick testing
+
+7. Frontend integration
+   - Vanilla JS client in `ArtRewards FrontEnd/script.js`
+   - Uses FormData for uploads and JSON for other calls; renders images by `cover_image_url` / `image_url`
+
+---
+
+## Troubleshooting
+- Images don’t show
+  - Run `php artisan storage:link`
+  - Ensure `window.API_BASE_URL` points to your API origin
+  - Open the image URL from the API response directly in the browser to verify access
+- 404/Network errors
+  - Check that `php artisan serve` is running and CORS isn’t blocked when serving the frontend from another origin
+
+---
+

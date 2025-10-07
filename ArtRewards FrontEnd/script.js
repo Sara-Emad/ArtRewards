@@ -360,11 +360,13 @@
         div.className = "col-12 col-sm-6 col-lg-4";
         const title = a.title || a.name || "Artwork";
         const image = a.image_url || a.image || '';
+        const artist = a.artist_name || a.artist || '';
         div.innerHTML = (
           '<div class="card h-100">' +
             (image ? `<img src="${escapeHtml(image)}" class="card-img-top" alt="artwork" style="height:140px;object-fit:cover;">` : '') +
             '<div class="card-body d-flex flex-column">' +
-              `<h6 class="card-title mb-2">${escapeHtml(title)}</h6>` +
+              `<h6 class="card-title mb-1">${escapeHtml(title)}</h6>` +
+              (artist ? `<div class="text-muted small mb-2">by ${escapeHtml(artist)}</div>` : '') +
               `<button class="btn btn-outline-danger btn-sm mt-auto" data-action="remove-artwork" data-artwork-id="${a.id}" data-collection-id="${c.id}">Remove</button>` +
             '</div>' +
           '</div>'
@@ -372,28 +374,16 @@
         grid.appendChild(div);
       });
 
-      // removal handlers
+      // removal handlers (simple confirm)
       grid.querySelectorAll('button[data-action="remove-artwork"]').forEach(function(btn){
         btn.addEventListener('click', function(){
           const artworkId = this.getAttribute('data-artwork-id');
           const collectionId = this.getAttribute('data-collection-id');
           if (!artworkId || !collectionId) return;
-          if (artworkDeleteModalEl && bootstrap && bootstrap.Modal) {
-            artworkDeleteMessage && (artworkDeleteMessage.textContent = 'Are you sure you want to remove this artwork from the collection?');
-            const m = new bootstrap.Modal(artworkDeleteModalEl);
-            m.show();
-            if (confirmArtworkDeleteBtn) {
-              confirmArtworkDeleteBtn.onclick = function(){
-                api.collections.removeArtwork(collectionId, artworkId)
-                  .then(function(){ m.hide(); openDetail(collectionId); })
-                  .catch(showErrorToast);
-              };
-            }
-          } else if (confirm('Remove this artwork?')) {
-            api.collections.removeArtwork(collectionId, artworkId)
-              .then(function(){ openDetail(collectionId); })
-              .catch(showErrorToast);
-          }
+          if (!confirm('Remove this artwork from the collection?')) return;
+          api.collections.removeArtwork(collectionId, artworkId)
+            .then(function(){ openDetail(collectionId); })
+            .catch(showErrorToast);
         });
       });
     }
@@ -645,6 +635,15 @@
   const artworksGrid = document.getElementById("artworksGrid");
   const artworksPagination = document.getElementById("artworksPagination");
   const addArtworksBtn = document.getElementById("addArtworksBtn");
+  const openArtworkFormBtn = document.getElementById("openArtworkFormBtn");
+  const openArtworkFormBtn2 = document.getElementById("openArtworkFormBtn");
+  const artworkFormModalEl = document.getElementById('artworkFormModal');
+  const artworkTitleInput = document.getElementById('artworkTitleInput');
+  const artistNameInput = document.getElementById('artistNameInput');
+  const artworkImageUpload = document.getElementById('artworkImageUpload');
+  const artworkImageUrl = document.getElementById('artworkImageUrl');
+  const artworkLink = document.getElementById('artworkLink');
+  const submitArtworkBtn = document.getElementById('submitArtworkBtn');
   const selectedCountEl = document.getElementById("selectedArtworksCount");
 
   let state = { page: 1, per_page: 9, selected: new Set(), forCollectionId: null };
@@ -673,13 +672,15 @@
       col.className = 'col-12 col-sm-6 col-lg-4';
       const image = a.image_url || a.image || '';
       const title = a.title || 'Artwork';
+      const artist = a.artist_name || a.artist || '';
       const id = a.id;
       const checked = state.selected.has(id) ? 'checked' : '';
       col.innerHTML = (
         '<div class="card h-100">' +
           (image ? `<img src="${String(image).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}" class="card-img-top" style="height:140px;object-fit:cover;">` : '') +
           '<div class="card-body">' +
-            `<div class="form-check"><input class="form-check-input" type="checkbox" id="aw-${id}" data-id="${id}" ${checked}><label class="form-check-label" for="aw-${id}">${String(title).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</label></div>` +
+            `<div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="aw-${id}" data-id="${id}" ${checked}><label class="form-check-label fw-semibold" for="aw-${id}">${String(title).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</label></div>` +
+            (artist ? `<div class="text-muted small">by ${String(artist).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : '') +
           '</div>' +
         '</div>'
       );
@@ -722,6 +723,51 @@
       if (typeof window !== 'undefined' && window.dispatchEvent) window.dispatchEvent(new CustomEvent('refreshCollectionDetail', { detail: { id: state.forCollectionId } }));
     }).catch(function(e){ console.error(e); });
   });
+
+  // Open create artwork form from selection modal
+  function openArtworkForm(){
+    if (!artworkFormModalEl || !bootstrap || !bootstrap.Modal) return;
+    artworkTitleInput && (artworkTitleInput.value = '');
+    artistNameInput && (artistNameInput.value = '');
+    artworkImageUpload && (artworkImageUpload.value = '');
+    artworkImageUrl && (artworkImageUrl.value = '');
+    artworkLink && (artworkLink.value = '');
+    new bootstrap.Modal(artworkFormModalEl).show();
+  }
+  if (openArtworkFormBtn2) openArtworkFormBtn2.addEventListener('click', openArtworkForm);
+
+  // Submit new artwork
+  function submitArtwork(){
+    const title = artworkTitleInput ? artworkTitleInput.value.trim() : '';
+    const artist = artistNameInput ? artistNameInput.value.trim() : '';
+    const file = artworkImageUpload && artworkImageUpload.files && artworkImageUpload.files[0] ? artworkImageUpload.files[0] : null;
+    const imageUrl = artworkImageUrl ? artworkImageUrl.value.trim() : '';
+    if (!title || !artist) { alert('Title and Artist Name are required'); return; }
+    let op;
+    if (file) {
+      const fd = new FormData();
+      fd.set('title', title);
+      fd.set('artist_name', artist);
+      fd.set('image', file);
+      if (artworkLink && artworkLink.value) fd.set('link', artworkLink.value.trim());
+      op = fetch(`${api.baseUrl}/artworks`, { method: 'POST', body: fd }).then(r=>r.json());
+    } else if (imageUrl) {
+      op = fetch(`${api.baseUrl}/artworks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ title: title, artist_name: artist, image_url: imageUrl, link: artworkLink ? artworkLink.value.trim() : undefined })
+      }).then(r=>r.json());
+    } else {
+      alert('Please select an image file or provide an image URL.');
+      return;
+    }
+    op.then(function(){
+      // Close artwork form and refresh artworks list
+      if (artworkFormModalEl && bootstrap && bootstrap.Modal) bootstrap.Modal.getInstance(artworkFormModalEl)?.hide();
+      load(1);
+    }).catch(function(e){ console.error(e); alert('Failed to create artwork'); });
+  }
+  if (submitArtworkBtn) submitArtworkBtn.addEventListener('click', submitArtwork);
 
   // Listen for open requests from detail renderer
   window.openArtworkSelection = open;
