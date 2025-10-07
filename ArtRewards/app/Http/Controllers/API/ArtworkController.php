@@ -40,6 +40,28 @@ class ArtworkController extends Controller
         $artworks = $query->paginate($perPage);
         return response()->json($artworks);
     }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:100'],
+            'artist_name' => ['required', 'string', 'max:100'],
+            'category' => ['nullable', 'string', 'max:100'],
+            'price_cents' => ['nullable', 'integer', 'min:0'],
+            'image' => ['required_without:image_url', 'image', 'max:5120'],
+            'image_url' => ['required_without:image', 'url'],
+            'link' => ['nullable', 'url'],
+        ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('artworks', 'public');
+            $validated['image_url'] = asset('storage/' . $path);
+            unset($validated['image']);
+        }
+
+        $artwork = Artwork::create($validated);
+        return response()->json($artwork, 201);
+    }
 }
 
 

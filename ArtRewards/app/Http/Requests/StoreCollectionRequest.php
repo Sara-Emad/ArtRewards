@@ -17,7 +17,8 @@ class StoreCollectionRequest extends ApiFormRequest
             'artist_id' => ['required', 'exists:artists,id'],
             'title' => ['required', 'string', 'min:2', 'max:50'],
             'description' => ['required', 'string', 'max:200'],
-            'cover_image_url' => ['required', 'url'],
+            'cover_image' => ['sometimes', 'required_without:cover_image_url', 'image', 'max:5120'],
+            'cover_image_url' => ['sometimes', 'required_without:cover_image', 'url'],
         ];
     }
 

@@ -16,7 +16,8 @@ class UpdateCollectionRequest extends ApiFormRequest
         return [
             'title' => ['sometimes', 'required', 'string', 'min:2', 'max:50'],
             'description' => ['sometimes', 'required', 'string', 'max:200'],
-            'cover_image_url' => ['sometimes', 'required', 'url'],
+            'cover_image' => ['sometimes', 'image', 'max:5120'],
+            'cover_image_url' => ['sometimes', 'url'],
         ];
     }
 

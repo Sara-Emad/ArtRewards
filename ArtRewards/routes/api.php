@@ -26,7 +26,8 @@ Route::delete('/collections/{collection}', [CollectionController::class, 'destro
 Route::post('/collections/{collection}/artworks', [CollectionController::class, 'addArtworks']);
 Route::delete('/collections/{collection}/artworks/{artwork}', [CollectionController::class, 'removeArtwork']);
 
-// Artworks (mock data source)
+// Artworks
 Route::get('/artworks', [ArtworkController::class, 'index']);
+Route::post('/artworks', [ArtworkController::class, 'store']);
 
 

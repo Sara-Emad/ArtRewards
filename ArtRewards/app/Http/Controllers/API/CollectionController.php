@@ -55,7 +55,13 @@ class CollectionController extends Controller
 
     public function store(StoreCollectionRequest $request): JsonResponse
     {
-        $collection = Collection::create($request->validated());
+        $data = $request->validated();
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('covers', 'public');
+            $data['cover_image_url'] = asset('storage/' . $path);
+            unset($data['cover_image']);
+        }
+        $collection = Collection::create($data);
         return response()->json($collection->load('artist'), 201);
     }
 
@@ -67,7 +73,13 @@ class CollectionController extends Controller
 
     public function update(UpdateCollectionRequest $request, Collection $collection): JsonResponse
     {
-        $collection->update($request->validated());
+        $data = $request->validated();
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('covers', 'public');
+            $data['cover_image_url'] = asset('storage/' . $path);
+            unset($data['cover_image']);
+        }
+        $collection->update($data);
         return response()->json($collection->refresh()->load(['artist']));
     }
 
