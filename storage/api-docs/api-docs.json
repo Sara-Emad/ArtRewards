@@ -1,0 +1,382 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "ArtRewards API",
+        "description": "Backend API for artist collections and artworks.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api",
+            "description": "API base path"
+        }
+    ],
+    "paths": {
+        "/collections": {
+            "get": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "List collections with search/sort/pagination",
+                "description": "Collections: list",
+                "operationId": "adac55e3dd87233e9754ecdd51db9dcc",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "newest",
+                                "oldest",
+                                "title-asc",
+                                "title-desc",
+                                "most-artworks",
+                                "least-artworks"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 6,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Create a collection",
+                "description": "Collections: create",
+                "operationId": "8c5920089efedd768918196f188c4ea8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "artist_id",
+                                    "title",
+                                    "description",
+                                    "cover_image_url"
+                                ],
+                                "properties": {
+                                    "artist_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "My Collection"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Short description"
+                                    },
+                                    "cover_image_url": {
+                                        "type": "string",
+                                        "example": "https://picsum.photos/seed/cover/600/400"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/collections/{id}": {
+            "get": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Get a collection by ID",
+                "description": "Collections: show",
+                "operationId": "6e16db8452ce112793f289c68027ba7b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Update a collection",
+                "description": "Collections: update",
+                "operationId": "78d393288affd27891b2778fd459a65f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Updated title"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Updated description"
+                                    },
+                                    "cover_image_url": {
+                                        "type": "string",
+                                        "example": "https://picsum.photos/seed/newcover/600/400"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Delete a collection",
+                "description": "Collections: delete",
+                "operationId": "e598a8ed0fd69ec0d772596e4296ce5b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted"
+                    }
+                }
+            }
+        },
+        "/collections/{id}/artworks": {
+            "post": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Add artworks to a collection",
+                "description": "Collections: add artworks",
+                "operationId": "07768497732b80112fc723055b48f853",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "artwork_ids"
+                                ],
+                                "properties": {
+                                    "artwork_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2,
+                                            3
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/collections/{id}/artworks/{artworkId}": {
+            "delete": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Remove an artwork from a collection",
+                "description": "Collections: remove artwork",
+                "operationId": "49ee02575dc50153d1f27a855d91f17e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "artworkId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Removed"
+                    }
+                }
+            }
+        },
+        "/artworks": {
+            "get": {
+                "tags": [
+                    "Artworks"
+                ],
+                "summary": "List artworks with search/sort/pagination",
+                "description": "Artworks: list",
+                "operationId": "c6860f5cfe36623b8540e4f1e97d1d56",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "newest",
+                                "oldest",
+                                "title-asc",
+                                "title-desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 6,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Collections",
+            "description": "Manage collections and their artworks"
+        },
+        {
+            "name": "Artworks",
+            "description": "List and search artworks"
+        }
+    ]
+}
